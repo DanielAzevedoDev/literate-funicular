@@ -1,13 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>HTML 5 Boilerplate</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-	<script src="index.js"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>HTML 5 Boilerplate</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Bootstrap -->
+  <style type="text/css">
+    body {
+      padding-top: 20px;
+      padding-bottom: 40px;
+    }
+
+    /* Custom container */
+    .container-narrow {
+      margin: 0 auto;
+      max-width: 700px;
+    }
+
+    .container-narrow>hr {
+      margin: 30px 0;
+    }
+
+    /* Main marketing message and sign up button */
+    .jumbotron {
+      margin: 60px 0;
+      text-align: center;
+    }
+
+    .jumbotron h1 {
+      font-size: 72px;
+      line-height: 1;
+    }
+
+    .jumbotron .btn {
+      font-size: 21px;
+      padding: 14px 24px;
+    }
+
+    /* Supporting marketing content */
+    .marketing {
+      margin: 60px 0;
+    }
+
+    .marketing p+h4 {
+      margin-top: 28px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script src="index.js"></script>
+  <script type="text/javascript">
+
+    var pokedex = [];
+    //fetch every pokemon basic data
+    fetch("pokedex.json",{mode: 'cors'})
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => setPokedex(data));
+    //extrcact only the English names and convert to lowerCase
+    function setPokedex(dex) {
+      for (let pokemon of dex) {
+        pokedex.push(pokemon.name.english.toLowerCase());
+      }
+    }
+
+    //find combinations
+    let findPermutations = (string) => {
+      if (!string || typeof string !== "string") {
+        return "Please enter a string"
+      }
+
+      if (!!string.length && string.length < 2) {
+        return string
+      }
+
+      let permutationsArray = []
+
+      for (let i = 0; i < string.length; i++) {
+        let char = string[i]
+
+        if (string.indexOf(char) != i)
+          continue
+
+        let remainder = string.slice(0, i) + string.slice(i + 1, string.length)
+
+        for (let permutation of findPermutations(remainder)) {
+          permutationsArray.push(char + permutation)
+        }
+      }
+      return permutationsArray
+    }
+
+    //get word, call scramble, compare and show
+    function baralhar() {
+      //get HTML elements
+      word = document.getElementById("misteryWord").value;
+      list = document.getElementById("nameList");
+
+      //trey to show a loading animation
+      loadPlace = document.getElementById("load");
+      loadPlace.append('<div class="spinner-border" role="status"> <span class="sr-only">Loading...</span></div>');
+      
+      //clear the list
+      list.innerHTML = '';
+
+      //get permutations
+      wordList = findPermutations(word);
+      console.log(wordList);
+
+      //get only the unique in case of repeated letters
+      const unique = Array.from(new Set(wordList));
+
+      //compare generated words with pokedex
+      for (const element of unique) {
+        if (element.length == word.length) {
+          var res;
+          //Dev Note: Inittialy i planned to list every generated word on screen, 
+          //but quickly realized that the list could be massive
+          //and since i'm lazy and terrible with front-end i left the list is :)
+          //if exists in pokedex, add 
+          if (pokedex.indexOf(element) >= 0) {
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(element));
+            li.classList.add("list-group-item");
+            list.appendChild(li);
+          }
+
+        }
+
+      }
+      //remove loading animation
+      loadPlace.innerHTML = '';
+    }
+  </script>
+  <div class="container">
+    <div class="jumbotron">
+      <h1 class="display-3">Pokemon DeScrambler</h1>
+      <p class="lead">Hello</p>
+      <hr class="my-2">
+      <label for="basic-url">Scrambled Name</label>
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" id="misteryWord" aria-describedby="basic-addon3">
+      </div>
+      <ul class="list-group" id="nameList">
+      </ul>
+      <p>More info</p>
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" style="color: white;" role="button" onclick="baralhar()">Jumbo action name</a>
+      </p>
+      <div id="load"></div>
+    </div>
+  </div>
+
+  </div>
+</body>
+
 </html>
